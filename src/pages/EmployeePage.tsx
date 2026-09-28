@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { UtensilsCrossed, AlertCircle } from 'lucide-react';
 import { useCurrentMeal } from '../hooks/useCurrentMeal';
 import { supabase } from '../lib/supabase';
-import { MOOD_OPTIONS, getMealDisplayName } from '../lib/mealSchedule';
+import { MOOD_OPTIONS } from '../lib/mealSchedule';
 import type { MoodOption, VoteResult } from '../lib/types';
 import { MealStatusDisplay } from '../components/MealStatus';
 import { MoodCard } from '../components/MoodCard';
