@@ -1,4 +1,5 @@
 import { Clock, CalendarDays } from 'lucide-react';
+import { getMealDisplayName } from '../lib/mealSchedule';
 
 interface MealStatusDisplayProps {
   date: string;
@@ -6,6 +7,7 @@ interface MealStatusDisplayProps {
   meal: string;
   mealStart: string;
   mealEnd: string;
+  overrideActive?: boolean;
 }
 
 export function MealStatusDisplay({
@@ -14,6 +16,7 @@ export function MealStatusDisplay({
   meal,
   mealStart,
   mealEnd,
+  overrideActive,
 }: MealStatusDisplayProps) {
   // Format the date nicely
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -34,6 +37,9 @@ export function MealStatusDisplay({
     return `${hour}:${minute} ${ampm}`;
   };
 
+  // Use code-controlled display name instead of database value
+  const displayMealName = getMealDisplayName(meal);
+
   return (
     <div className="text-center space-y-3">
       {/* Date & Day */}
@@ -44,9 +50,9 @@ export function MealStatusDisplay({
         </span>
       </div>
 
-      {/* Meal Title */}
+      {/* Meal Title — uses frontend display name */}
       <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
-        {meal}
+        {displayMealName}
       </h2>
 
       {/* Schedule */}
@@ -58,6 +64,16 @@ export function MealStatusDisplay({
           {formatTime(mealStart)} — {formatTime(mealEnd)}
         </span>
       </div>
+
+      {/* Override indicator */}
+      {overrideActive && (
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+          bg-amber-50 dark:bg-amber-900/20 
+          text-amber-600 dark:text-amber-400 text-xs font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+          Testing Mode
+        </div>
+      )}
     </div>
   );
 }

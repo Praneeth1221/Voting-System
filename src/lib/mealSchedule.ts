@@ -8,8 +8,30 @@ import type { MoodOption } from './types';
 
 export const BUSINESS_TIMEZONE = 'Asia/Colombo';
 
+// ============================================================
+// MEAL DISPLAY NAMES — Edit these to change what employees see
+// The keys must match the database meal identifiers exactly.
+// The values are presentation-only and can be freely changed.
+// ============================================================
+export const MEAL_DISPLAY_NAMES: Record<string, string> = {
+  'Breakfast': 'උදෑසන ආහාරය',
+  'Lunch': 'දිවා ආහාරය',
+  'Evening Snack': 'සවස ආහාරය',
+};
+
+/**
+ * Convert a database meal key to its frontend display name.
+ * Falls back to the raw key if no mapping is defined.
+ */
+export function getMealDisplayName(dbMealKey: string): string {
+  return MEAL_DISPLAY_NAMES[dbMealKey] || dbMealKey;
+}
+
 export interface MealPeriod {
-  name: string;
+  /** Database identifier — do NOT change */
+  key: string;
+  /** Display name — controlled by MEAL_DISPLAY_NAMES */
+  displayName: string;
   startHour: number;
   startMinute: number;
   endHour: number;
@@ -20,7 +42,8 @@ export interface MealPeriod {
 
 export const MEAL_PERIODS: MealPeriod[] = [
   {
-    name: 'Breakfast',
+    key: 'Breakfast',
+    displayName: getMealDisplayName('Breakfast'),
     startHour: 7,
     startMinute: 0,
     endHour: 10,
@@ -29,7 +52,8 @@ export const MEAL_PERIODS: MealPeriod[] = [
     displayEnd: '10:30 AM',
   },
   {
-    name: 'Lunch',
+    key: 'Lunch',
+    displayName: getMealDisplayName('Lunch'),
     startHour: 12,
     startMinute: 0,
     endHour: 14,
@@ -38,7 +62,8 @@ export const MEAL_PERIODS: MealPeriod[] = [
     displayEnd: '2:30 PM',
   },
   {
-    name: 'Evening Snack',
+    key: 'Evening Snack',
+    displayName: getMealDisplayName('Evening Snack'),
     startHour: 17,
     startMinute: 0,
     endHour: 19,

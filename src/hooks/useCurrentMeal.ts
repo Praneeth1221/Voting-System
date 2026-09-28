@@ -28,8 +28,9 @@ export function useCurrentMeal() {
   useEffect(() => {
     fetchMealStatus();
 
-    // Refresh every 30 seconds to keep meal status current
-    const interval = setInterval(fetchMealStatus, 30000);
+    // Refresh every 15 seconds — ensures override expiry
+    // and meal window transitions are detected promptly
+    const interval = setInterval(fetchMealStatus, 15000);
 
     return () => clearInterval(interval);
   }, [fetchMealStatus]);

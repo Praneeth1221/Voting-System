@@ -24,6 +24,7 @@ export interface MealStatus {
   meal_end: string | null;
   meal_record_id: string | null;
   server_time: string;
+  override_active: boolean;
 }
 
 export interface MealRecord {

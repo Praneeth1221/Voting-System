@@ -18,19 +18,19 @@ export function VotingClosed({ currentTime }: VotingClosedProps) {
     if (hour >= 0 && hour < 7) {
       icon = <Moon className="w-16 h-16 text-indigo-400" />;
       message = 'Good Morning!';
-      subMessage = `Breakfast voting opens at ${MEAL_PERIODS[0].displayStart}`;
+      subMessage = `${MEAL_PERIODS[0].displayName} voting opens at ${MEAL_PERIODS[0].displayStart}`;
     } else if (hour >= 10 && hour < 12) {
       icon = <Coffee className="w-16 h-16 text-amber-500" />;
-      message = 'Breakfast voting has ended';
-      subMessage = `Lunch voting opens at ${MEAL_PERIODS[1].displayStart}`;
+      message = `${MEAL_PERIODS[0].displayName} voting has ended`;
+      subMessage = `${MEAL_PERIODS[1].displayName} voting opens at ${MEAL_PERIODS[1].displayStart}`;
     } else if (hour >= 14 && hour < 17) {
       icon = <Sun className="w-16 h-16 text-orange-400" />;
-      message = 'Lunch voting has ended';
-      subMessage = `Evening Snack voting opens at ${MEAL_PERIODS[2].displayStart}`;
+      message = `${MEAL_PERIODS[1].displayName} voting has ended`;
+      subMessage = `${MEAL_PERIODS[2].displayName} voting opens at ${MEAL_PERIODS[2].displayStart}`;
     } else if (hour >= 19) {
       icon = <Moon className="w-16 h-16 text-indigo-400" />;
       message = 'All meals for today are complete';
-      subMessage = `Breakfast voting opens tomorrow at ${MEAL_PERIODS[0].displayStart}`;
+      subMessage = `${MEAL_PERIODS[0].displayName} voting opens tomorrow at ${MEAL_PERIODS[0].displayStart}`;
     }
   }
 
@@ -55,18 +55,18 @@ export function VotingClosed({ currentTime }: VotingClosedProps) {
         {subMessage}
       </p>
 
-      {/* Schedule display */}
+      {/* Schedule display — uses displayName */}
       <div className="mt-6 w-full max-w-sm space-y-3">
         {MEAL_PERIODS.map((period) => (
           <div
-            key={period.name}
+            key={period.key}
             className="flex items-center justify-between px-5 py-3.5 rounded-xl
               bg-white dark:bg-slate-800/50 
               border border-slate-200/60 dark:border-slate-700/60
               shadow-sm"
           >
             <span className="font-semibold text-slate-700 dark:text-slate-200">
-              {period.name}
+              {period.displayName}
             </span>
             <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
               {period.displayStart} – {period.displayEnd}

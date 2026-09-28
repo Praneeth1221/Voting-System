@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { UtensilsCrossed, AlertCircle } from 'lucide-react';
 import { useCurrentMeal } from '../hooks/useCurrentMeal';
 import { supabase } from '../lib/supabase';
-import { MOOD_OPTIONS } from '../lib/mealSchedule';
+import { MOOD_OPTIONS, getMealDisplayName } from '../lib/mealSchedule';
 import type { MoodOption, VoteResult } from '../lib/types';
 import { MealStatusDisplay } from '../components/MealStatus';
 import { MoodCard } from '../components/MoodCard';
@@ -62,7 +62,7 @@ export function EmployeePage() {
       }
 
       if (!result.success) {
-        if (result.error?.includes('closed') || result.error?.includes('No active')) {
+        if (result.error?.includes('closed') || result.error?.includes('No active') || result.error?.includes('expired')) {
           setPageState('rejected');
           setSelectedMood(null);
         } else {
@@ -75,7 +75,6 @@ export function EmployeePage() {
       setConfirmedMood(selectedMood);
       setSelectedMood(null);
       setPageState('success');
-      refresh(); // Refresh meal status
     } catch (err) {
       console.error('Vote submission error:', err);
       setSubmitError(
@@ -84,7 +83,7 @@ export function EmployeePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedMood, isSubmitting, refresh]);
+  }, [selectedMood, isSubmitting]);
 
   const handleReset = useCallback(() => {
     setSelectedMood(null);
@@ -167,7 +166,7 @@ export function EmployeePage() {
             </div>
           )}
 
-          {/* Success */}
+          {/* Success — auto-returns after 1.5s */}
           {displayState === 'success' && confirmedMood && (
             <SuccessState option={confirmedMood} onReset={handleReset} />
           )}
@@ -175,13 +174,14 @@ export function EmployeePage() {
           {/* Active Voting / Confirming */}
           {(displayState === 'voting' || displayState === 'confirming') && mealStatus && (
             <div className="space-y-8 pt-4">
-              {/* Meal status header */}
+              {/* Meal status header — uses code-controlled display name */}
               <MealStatusDisplay
                 date={mealStatus.current_date}
                 day={mealStatus.day}
                 meal={mealStatus.meal!}
                 mealStart={mealStatus.meal_start!}
                 mealEnd={mealStatus.meal_end!}
+                overrideActive={mealStatus.override_active}
               />
 
               {/* Instruction text */}

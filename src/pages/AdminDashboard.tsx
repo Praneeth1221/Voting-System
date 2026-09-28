@@ -7,10 +7,13 @@ import {
   ChevronRight,
   Loader2,
   AlertCircle,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { exportToExcel } from '../utils/excelExport';
+import { getMealDisplayName } from '../lib/mealSchedule';
 import type { MealRecord } from '../lib/types';
 import { format } from 'date-fns';
 
@@ -24,6 +27,10 @@ export function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Override state
+  const [overrideEnabled, setOverrideEnabled] = useState(false);
+  const [overrideToggling, setOverrideToggling] = useState(false);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -58,9 +65,48 @@ export function AdminDashboard() {
     }
   }, [page]);
 
+  // Fetch override status
+  const fetchOverrideStatus = useCallback(async () => {
+    try {
+      const { data, error: rpcErr } = await supabase.rpc('get_voting_override_status');
+      if (rpcErr) throw rpcErr;
+      if (data) {
+        setOverrideEnabled(data.is_enabled);
+      }
+    } catch (err) {
+      console.error('Failed to fetch override status:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchRecords();
-  }, [fetchRecords]);
+    fetchOverrideStatus();
+
+    // Poll override status every 15 seconds to detect auto-expiry
+    const interval = setInterval(fetchOverrideStatus, 15000);
+    return () => clearInterval(interval);
+  }, [fetchRecords, fetchOverrideStatus]);
+
+  const handleToggleOverride = async () => {
+    setOverrideToggling(true);
+    try {
+      const newValue = !overrideEnabled;
+      const { data, error: rpcErr } = await supabase.rpc('toggle_voting_override', {
+        p_enabled: newValue,
+      });
+      if (rpcErr) throw rpcErr;
+      if (data?.success) {
+        setOverrideEnabled(newValue);
+      } else {
+        setError(data?.error || 'Failed to toggle override');
+      }
+    } catch (err) {
+      console.error('Override toggle error:', err);
+      setError('Failed to toggle voting override');
+    } finally {
+      setOverrideToggling(false);
+    }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -174,6 +220,37 @@ export function AdminDashboard() {
           </div>
         )}
 
+        {/* Voting Override Control */}
+        <div className="mb-6 p-4 rounded-xl bg-white dark:bg-slate-800/50 
+          border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Voting Override
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {overrideEnabled
+                  ? 'Temporary voting enabled — auto-expires after 2 min outside meal hours'
+                  : 'Enable to allow voting outside scheduled hours (testing only)'}
+              </p>
+            </div>
+            <button
+              onClick={handleToggleOverride}
+              disabled={overrideToggling}
+              className="flex items-center gap-2 transition-colors duration-200 disabled:opacity-50"
+              aria-label="Toggle voting override"
+            >
+              {overrideToggling ? (
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+              ) : overrideEnabled ? (
+                <ToggleRight className="w-10 h-10 text-amber-500 hover:text-amber-600" />
+              ) : (
+                <ToggleLeft className="w-10 h-10 text-slate-400 hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400" />
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -243,7 +320,7 @@ export function AdminDashboard() {
                         {record.day}
                       </td>
                       <td className="px-5 py-3.5 text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                        {record.meal}
+                        {getMealDisplayName(record.meal)}
                       </td>
                       <td className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">
                         {formatLastVoteTime(record.last_vote_time)}
